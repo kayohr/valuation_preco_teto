@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Filtro Décio Bazin</title>
+</head>
+<body>
+    <h1>Filtro de Ações - Décio Bazin</h1>
+
+    <form method="POST">
+        <label>DY mínimo (original: 6.00%):</label><br>
+        <input type="number" step="any" name="dy_min" value="6.00"><br>
+        <label>DivBPatr máximo (original: 1.50):</label><br>
+        <input type="number" step="any" name="divbpatr_max" value="1.50"><br>
+        <label>EV/EBITDA máximo (original: 5.00):</label><br>
+        <input type="number" step="any" name="evebitda_max" value="5.00"><br>
+        <label>PL máximo (original: 10.00):</label><br>
+        <input type="number" step="any" name="pl_max" value="10.00"><br>
+        <label>PL mínimo (original: 0.00):</label><br>
+        <input type="number" step="any" name="pl_min" value="0.00"><br><br>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    {% if erro %}
+        <p style="color: red;">{{ erro }}</p>
+    {% endif %}
+
+    {% if resultado_bazin_custom is not none %}
+        <h2>Top 10 ações (ordenadas por DY)</h2>
+        <table border="1" cellpadding="5">
+            <thead>
+                <tr>
+                    {% for coluna in resultado_bazin_custom.columns %}
+                        <th>{{ coluna }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for _, linha in resultado_bazin_custom.iterrows() %}
+                <tr>
+                    {% for valor in linha %}
+                        <td>{{ valor }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <p>
+    <a href="{{ url_for('index') }}">
+        <button type="button">Voltar para Valuation</button>
+    </a>
+    </p>
+</body>
+</html>

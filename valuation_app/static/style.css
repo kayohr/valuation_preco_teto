@@ -1,0 +1,94 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: #f3f4f6;
+}
+
+h1 {
+    text-align: center;
+    color: #1f2937;
+}
+
+form {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+input[type="text"] {
+    padding: 8px;
+    width: 200px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.item {
+    background-color: #f9fafb;
+    padding: 10px;
+    border-left: 4px solid #2563eb;
+    border-radius: 6px;
+}
+
+.item strong {
+    color: #111827;
+}
+
+.erro {
+    text-align: center;
+    color: red;
+}
+
+.modelos-section {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modelo-box {
+    margin-bottom: 16px;
+}
+
+.modelo-titulo {
+    width: 100%;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.modelo-conteudo {
+    display: none;
+    background-color: #f9fafb;
+    margin-top: 5px;
+    padding: 10px;
+    border-left: 4px solid #2563eb;
+    border-radius: 6px;
+}

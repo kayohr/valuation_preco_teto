@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Valuation de Ações</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Valuation de Ações</h1>
+
+    <form method="POST">
+        <label for="ticker">Digite o Ticker:</label>
+        <input type="text" name="ticker" id="ticker" value="{{ ticker or '' }}" required>
+        <button type="submit">Buscar</button>
+    </form>
+
+    {% if erro %}
+        <p class="erro">{{ erro }}</p>
+    {% endif %}
+
+    {% if dados %}
+    <div class="card">
+        <h2>Resultados para {{ dados.ticker }}</h2>
+        <div class="grid">
+            {% for chave, valor in dados.items() if chave != 'ticker' %}
+                <div class="item">
+                    <strong>{{ chave.upper().replace("_", " ") }}:</strong> {{ "%.2f"|format(valor) }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="modelos-section">
+        <h2>Modelos de Valuation</h2>
+
+        {% for modelo in modelos %}
+        <div class="modelo-box">
+            <button type="button" class="modelo-titulo" onclick="toggleModelo('{{ loop.index }}')">
+                {{ modelo.nome }}
+            </button>
+            <div id="modelo-{{ loop.index }}" class="modelo-conteudo">
+                <p>{{ modelo.descricao }}</p>
+
+                {% if modelo.nome == "Estimando o crescimento dos dividendos" and dados %}
+                <form method="POST">
+                    <input type="hidden" name="modelo" value="estimar_crescimento_dividendos">
+                    <input type="hidden" name="ticker" value="{{ ticker }}">
+                    <label>Payout (%):</label><br>
+                    <input type="number" step="any" name="payout"><br>
+                    <label>Lucro atual:</label><br>
+                    <input type="number" step="any" name="lucro1"><br>
+                    <label>Lucro antigo (ano base):</label><br>
+                    <input type="number" step="any" name="lucro2"><br>
+                    <label>Diferença de anos:</label><br>
+                    <input type="number" name="anos"><br><br>
+                    <button type="submit">Calcular</button>
+                </form>
+                {% if resultado_crescimento %}<pre>{{ resultado_crescimento }}</pre>{% endif %}
+                {% endif %}
+
+                {% if modelo.nome == "Modelo de Gordon / Análise Individual" and dados %}
+                <form method="POST">
+                    <input type="hidden" name="modelo" value="modelo_gordon">
+                    <input type="hidden" name="ticker" value="{{ ticker }}">
+                    <label>ROE (%):</label><br>
+                    <input type="number" step="any" name="roe" value="{{ dados.roe }}"><br>
+                    <label>Payout (%):</label><br>
+                    <input type="number" step="any" name="payout" value="{{ dados.payout }}"><br>
+                    <label>Taxa livre de risco - RF (%):</label><br>
+                    <input type="number" step="any" name="rf"><br>
+                    <label>Beta (B):</label><br>
+                    <input type="number" step="any" name="beta"><br>
+                    <label>Retorno do mercado - RM (%):</label><br>
+                    <input type="number" step="any" name="rm"><br>
+                    <label>Escolha o tipo de D1:</label><br>
+                    <select name="d1_tipo">
+                        <option value="1">Calcular automaticamente</option>
+                        <option value="2">Usar dividendo do ano anterior (manual)</option>
+                    </select><br>
+                    <label>Informe o Dividendo do ano anterior:</label><br>
+                    <input type="number" step="any" name="d1_valor"><br><br>
+                    <button type="submit">Calcular</button>
+                </form>
+                {% if resultado_gordon %}<pre>{{ resultado_gordon }}</pre>{% endif %}
+                {% endif %}
+
+                {% if modelo.nome == "Modelo de Gordon com Múltiplos Justos (P/L)" and dados %}
+                <form method="POST">
+                    <input type="hidden" name="modelo" value="multiplo_justo">
+                    <input type="hidden" name="ticker" value="{{ ticker }}">
+                    <label>Taxa exigida (RTX) %:</label><br>
+                    <input type="number" step="any" name="rtx"><br><br>
+                    <button type="submit">Calcular</button>
+                </form>
+                {% if resultado_multiplo %}
+                    <p><strong>ROE:</strong> {{ resultado_multiplo.roe }}%</p>
+                    <p><strong>Payout:</strong> {{ resultado_multiplo.payout }}%</p>
+                    <p><strong>g:</strong> {{ resultado_multiplo.g }}%</p>
+                    <p><strong>P/L justo:</strong> {{ resultado_multiplo.pl_justo }}</p>
+                    <p><strong>P/L atual:</strong> {{ resultado_multiplo.pl_atual }}</p>
+                    <p><strong>Status:</strong> {{ resultado_multiplo.status }}</p>
+                {% endif %}
+                {% endif %}
+
+                {% if modelo.nome == "PL Inverso" and dados %}
+                <form method="POST">
+                    <input type="hidden" name="modelo" value="pl_inverso">
+                    <input type="hidden" name="ticker" value="{{ ticker }}">
+                    <button type="submit">Calcular</button>
+                </form>
+
+                {% if resultado_pl_inverso %}
+                    <p><strong>DY teórico com payout 100%:</strong> {{ resultado_pl_inverso.pl_inverso }}%</p>
+                    <p><strong>PL:</strong> {{ resultado_pl_inverso.pl }}</p>
+                    <p><strong>Payout atual:</strong> {{ resultado_pl_inverso.payout }}%</p>
+                    <p><strong>DY ajustado:</strong> {{ resultado_pl_inverso.dy_completo }}%</p>
+                    <p><strong>Tempo estimado para retorno:</strong> {{ resultado_pl_inverso.anos_para_retorno }} anos</p>
+                    <pre>{{ resultado_pl_inverso.explicacao }}</pre>
+                {% endif %}
+                {% endif %}
+
+                {% if modelo.nome == "Spread: retorno da ação - título público" and dados %}
+                <form method="POST">
+                    <input type="hidden" name="modelo" value="pl_bonds">
+                    <input type="hidden" name="ticker" value="{{ ticker }}">
+
+                    <label>Informe a taxa do título público (%):</label><br>
+                    <input type="number" step="any" name="titulo_public"><br>
+                    <small style="font-size: 12px; color: gray;">
+                        Ex: IPCA longo prazo + inflação atual ou SELIC atual
+                    </small><br><br>
+
+                    <button type="submit">Calcular</button>
+                </form>
+
+                {% if resultado_pl_bonds %}
+                <pre>{{ resultado_pl_bonds }}</pre>
+                {% endif %}
+                {% endif %}
+
+                {% if modelo.nome == "Lucro e dividendo - Valuation do Damodaran" and dados %}
+                <form method="POST">
+                    <input type="hidden" name="modelo" value="valuation_damodaran">
+                    <input type="hidden" name="ticker" value="{{ ticker }}">
+
+                    <label>LPA atual:</label><br>
+                    <input type="number" step="any" name="lpa" value="{{ dados.lpa }}"><br>
+                    <label>Payout (%):</label><br>
+                    <input type="number" step="any" name="payout" value="{{ dados.payout }}"><br>
+                    <label>Número de anos de projeção:</label><br>
+                    <input type="number" name="anos"><br>
+                    <label>Taxa de crescimento do capital social (%):</label><br>
+                    <input type="number" step="any" name="capital">
+                    <small style="font-size: 12px; color: gray;">
+                        Ex: crescimento do patrimônio líquido anual, calcule com base no balanço
+                    </small><br><br>
+                    <button type="submit">Calcular</button>
+                </form>
+
+                {% if resultado_damodaran %}
+                <pre>{{ resultado_damodaran }}</pre>
+                {% endif %}
+                {% endif %}
+
+
+                {% if modelo.nome == "Fórmula de Graham" and dados %}
+                <form method="POST">
+                    <input type="hidden" name="modelo" value="formula_graham">
+                    <input type="hidden" name="ticker" value="{{ ticker }}">
+                    <button type="submit">Calcular</button>
+                </form>
+
+                {% if resultado_graham %}
+                    {% if resultado_graham.erro %}
+                        <p style="color: red;">{{ resultado_graham.erro }}</p>
+                    {% else %}
+                        <p><strong>LPA:</strong> R$ {{ resultado_graham.lpa }}</p>
+                        <p><strong>VPA:</strong> R$ {{ resultado_graham.vpa }}</p>
+                        <p><strong>Valor Intrínseco (VI):</strong> R$ {{ resultado_graham.valor_intrinseco }}</p>
+                        <p><strong>Cotação Atual:</strong> R$ {{ resultado_graham.cotacao_atual }}</p>
+                        <p><strong>Margem de Segurança:</strong> {{ resultado_graham.margem_seguranca }}%</p>
+                        <p><strong>Status:</strong> {{ resultado_graham.status }}</p>
+                    {% endif %}
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+<p>
+    <a href="{{ url_for('bazin') }}">
+        <button type="button">Ir para Filtro Décio Bazin</button>
+    </a>
+</p>
+
+
+    <script>
+        // Limpa o ticker se a página foi recarregada (F5 / navegação direta)
+        if (window.performance && window.performance.navigation.type === window.performance.navigation.TYPE_RELOAD) {
+            window.onload = function() {
+                document.getElementById('ticker').value = '';
+            };
+        }
+
+        function toggleModelo(id) {
+            const box = document.getElementById('modelo-' + id);
+            box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+        }
+
+        window.onload = function() {
+            {% if resultado_crescimento %}toggleModelo(1);{% endif %}
+            {% if resultado_gordon %}toggleModelo(2);{% endif %}
+            {% if resultado_multiplo %}toggleModelo(3);{% endif %}
+            {% if resultado_pl_inverso %}toggleModelo(4);{% endif %}
+            {% if resultado_pl_bonds %}toggleModelo(5);{% endif %}
+            {% if resultado_damodaran %}toggleModelo(6);{% endif %}
+            {% if resultado_graham %}toggleModelo(7);{% endif %}
+        };
+    </script>
+</body>
+</html>
