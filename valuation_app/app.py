@@ -3,9 +3,11 @@ import pandas as pd
 import os
 import requests
 import requests_cache
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 headers = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36"
 }
 session = requests.Session()
 session.headers.update(headers)
