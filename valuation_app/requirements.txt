@@ -4,3 +4,4 @@ requests
 pandas
 fundamentus
 requests-cache
+html5lib
