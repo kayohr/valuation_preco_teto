@@ -4,6 +4,12 @@ import os
 import requests
 import requests_cache
 
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+session = requests.Session()
+session.headers.update(headers)
+
 # Remove o arquivo de cache do fundamentus se existir
 cache_file = os.path.join(os.path.dirname(__file__), 'http_cache.sqlite')
 if os.path.exists(cache_file):
@@ -14,7 +20,7 @@ requests_cache.disabled()
 
 import fundamentus
 # Substitui a sessão interna do fundamentus por requests puro (sem cache)
-fundamentus.fundamentus.session = requests.Session()
+fundamentus.fundamentus.session = session
 
 from functions.estimativa_crescimento_dividendos import estimar_crescimento_dividendos
 from functions.modelo_gordon import modelo_gordon
